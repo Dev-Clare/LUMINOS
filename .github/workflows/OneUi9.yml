@@ -255,20 +255,6 @@ jobs:
             echo "Mods are disabled, skipping hotspot patch"
         fi
 
-    - name: Adding LumiFota OTA Updater
-      shell: bash
-      env:
-        BUILD_STATUS: ${{ env.BUILD_STATUS }}
-        PLATFORM_PK8: ${{ secrets.PLATFORM_PK8 }}
-        PLATFORM_CERT: ${{ secrets.PLATFORM_CERT }}
-      run: |
-        source scripts/features/LumiFota.sh
-        if [ "$USE_MODS" = "true" ]; then
-            ADD_LUMIFOTA "$FIRM_DIR"
-        else
-            echo "Mods are disabled, skipping LumiFota OTA Updater"
-        fi
-
     - name: Configuring Galaxy AI
       shell: bash
       run: |
