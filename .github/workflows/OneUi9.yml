@@ -274,6 +274,9 @@ jobs:
         INSTALL_FRAMEWORK \
           "FIRMWARE/system/system/framework/framework-res.apk"
 
+    # NOTE: SecSettings, SecSettingsIntelligence and SecSetupWizard_Global were
+    # removed from decompile/patch/recompile because the Mods folders
+    # (SecSettings, SetupWizard, LumiSettings) were deleted.
     - name: Decompile framework jars
       shell: bash
       run: |
@@ -288,12 +291,6 @@ jobs:
           "FIRMWARE/system/system/framework/knoxsdk.jar" "$WORK_DIR" &
         DECOMPILE "$APKTOOL" \
           "FIRMWARE/system/system/framework/samsungkeystoreutils.jar" "$WORK_DIR" &
-        DECOMPILE "$APKTOOL" \
-          "FIRMWARE/system/system/priv-app/SecSettings/SecSettings.apk" "$WORK_DIR" &
-        DECOMPILE "$APKTOOL" \
-          "FIRMWARE/system/system/priv-app/SecSettingsIntelligence/SecSettingsIntelligence.apk" "$WORK_DIR" &
-        DECOMPILE "$APKTOOL" \
-          "FIRMWARE/system/system/priv-app/SecSetupWizard_Global/SecSetupWizard_Global.apk" "$WORK_DIR" &
         wait
 
     - name: Patch Knox
@@ -311,9 +308,6 @@ jobs:
         PATCH_SECURE_FOLDER "$WORK_DIR/services"
         CUSTOM_PLATFORM_SIGNATURE "$WORK_DIR/services" "$(GET_ACTIVE_CERT_HEX)"
         DISABLE_SIGNATURE_VERIFICATION "$WORK_DIR/framework"
-        PATCH_SECSETTINGS "$WORK_DIR/SecSettings"
-        PATCH_SETUPWIZARD "$WORK_DIR/SecSetupWizard_Global"
-        ADD_LUMISETTINGS "$WORK_DIR/SecSettings" "$WORK_DIR/framework" "$WORK_DIR/services" "$WORK_DIR/SecSettingsIntelligence"
         ADD_KNOXPATCH "$WORK_DIR/framework" "$WORK_DIR/knoxsdk" "$WORK_DIR/samsungkeystoreutils"
 
     - name: Recompile framework
@@ -333,17 +327,8 @@ jobs:
           "FIRMWARE/system/system/framework" "$WORK_DIR" &
         RECOMPILE "$APKTOOL" "$WORK_DIR/samsungkeystoreutils" \
           "FIRMWARE/system/system/framework" "$WORK_DIR" &
-        REBUILD_AND_SIGN_APK "$APKTOOL" "$WORK_DIR/SecSettings" \
-          "$HOME/.local/share/apktool/framework" "$WORK_DIR/SecSettings_rebuilt.apk" &
-        REBUILD_AND_SIGN_APK "$APKTOOL" "$WORK_DIR/SecSettingsIntelligence" \
-          "$HOME/.local/share/apktool/framework" "$WORK_DIR/SecSettingsIntelligence_rebuilt.apk" &
-        REBUILD_AND_SIGN_APK "$APKTOOL" "$WORK_DIR/SecSetupWizard_Global" \
-          "$HOME/.local/share/apktool/framework" "$WORK_DIR/SecSetupWizard_Global_rebuilt.apk" &
         wait
-        if [ ! -f "$WORK_DIR/SecSettings_rebuilt.apk" ] || \
-           [ ! -f "$WORK_DIR/SecSettingsIntelligence_rebuilt.apk" ] || \
-           [ ! -f "$WORK_DIR/SecSetupWizard_Global_rebuilt.apk" ] || \
-           [ ! -f "$WORK_DIR/framework.jar" ] || \
+        if [ ! -f "$WORK_DIR/framework.jar" ] || \
            [ ! -f "$WORK_DIR/services.jar" ] || \
            [ ! -f "$WORK_DIR/knoxsdk.jar" ] || \
            [ ! -f "$WORK_DIR/samsungkeystoreutils.jar" ]; then
@@ -362,18 +347,6 @@ jobs:
                 "FIRMWARE/system/system/framework/$ARCH/boot-framework.oat" \
                 "FIRMWARE/system/system/framework/$ARCH/boot-framework.vdex"
         done
-        if [ -f "$WORK_DIR/SecSettings_rebuilt.apk" ]; then
-          cp -fv "$WORK_DIR/SecSettings_rebuilt.apk" \
-            "FIRMWARE/system/system/priv-app/SecSettings/SecSettings.apk"
-        fi
-        if [ -f "$WORK_DIR/SecSettingsIntelligence_rebuilt.apk" ]; then
-          cp -fv "$WORK_DIR/SecSettingsIntelligence_rebuilt.apk" \
-            "FIRMWARE/system/system/priv-app/SecSettingsIntelligence/SecSettingsIntelligence.apk"
-        fi
-        if [ -f "$WORK_DIR/SecSetupWizard_Global_rebuilt.apk" ]; then
-          cp -fv "$WORK_DIR/SecSetupWizard_Global_rebuilt.apk" \
-            "FIRMWARE/system/system/priv-app/SecSetupWizard_Global/SecSetupWizard_Global.apk"
-        fi
 
     - name: Build ROM
       shell: bash
